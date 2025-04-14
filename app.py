@@ -49,8 +49,8 @@ import math
 
 def log_event(message):
     print(message)
-    socketio.emit("gesture_event",              # ←  se envía al front‑end
-                  {"message": message})
+    # socketio.emit("gesture_event",              # ←  se envía al front‑end
+    #               {"message": message})
     # Emite el evento "gesture_event" a todos los clientes conectados
     #socketio.emit("gesture_event", {"message": message})
 
@@ -967,6 +967,8 @@ print("Puerto en uso:", port)
 if __name__ == '__main__':
     #indices = listar_camaras_disponibles()
     #print("Cámaras detectadas:", indices)
-    socketio.run(app, host="0.0.0.0", port=port, debug=False)
+    #socketio.run(app, host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False)
+
 
 

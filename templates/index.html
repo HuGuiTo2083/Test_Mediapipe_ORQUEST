@@ -86,17 +86,17 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          const socket = io();                      // mismo host y puerto
-          const logBox = document.getElementById('log');
+       // document.addEventListener('DOMContentLoaded', () => {
+         // const socket = io();                      // mismo host y puerto
+          //const logBox = document.getElementById('log');
         
-          socket.on('gesture_event', data => {
-            const p = document.createElement('p');
-            p.textContent = data.message;
-            logBox.appendChild(p);
-            logBox.scrollTop = logBox.scrollHeight; // auto‑scroll
-          });
-        });
+       //   socket.on('gesture_event', data => {
+         //   const p = document.createElement('p');
+           // p.textContent = data.message;
+            //logBox.appendChild(p);
+            //logBox.scrollTop = logBox.scrollHeight; // auto‑scroll
+          //});
+       // }); 
         </script>
 </body>
 </html>
