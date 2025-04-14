@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Monitoreo de Pantalla</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+        .cam-container {
+            display: inline-block;
+            margin: 10px;
+            border: 3px solid #333;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+        .cam-stream {
+            width: 320px;
+            height: 240px;
+        }
+        #logContainer {
+            border: 1px solid #333;
+            background-color: #fff;
+            padding: 10px;
+            margin-top: 20px;
+            width: 90%;
+            height: 200px;
+            overflow-y: scroll;
+            text-align: left;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Monitoreo Inteligente de Pantalla</h1>
+
+    <!-- Área para mostrar el streaming de cada cámara -->
+    {% if cameras|length > 0 %}
+        {% for cam_id in cameras %}
+            <div class="cam-container">
+                <h3>Cámara {{ cam_id }}</h3>
+                <img class="cam-stream" src="{{ url_for('video_feed', camera_id=cam_id) }}" alt="Stream en vivo">
+            </div>
+            <div class="cam-container">
+                <h3>Cámara {{ cam_id }}</h3>
+                <img class="cam-stream" src="{{ url_for('video_feed', camera_id=cam_id) }}" alt="Stream en vivo">
+            </div>
+            <div class="cam-container">
+                <h3>Cámara {{ cam_id }}</h3>
+                <img class="cam-stream" src="{{ url_for('video_feed', camera_id=cam_id) }}" alt="Stream en vivo">
+            </div>
+            <div class="cam-container">
+                <h3>Cámara {{ cam_id }}</h3>
+                <img class="cam-stream" src="{{ url_for('video_feed', camera_id=cam_id) }}" alt="Stream en vivo">
+            </div>
+            <div class="cam-container">
+                <h3>Cámara {{ cam_id }}</h3>
+                <img class="cam-stream" src="{{ url_for('video_feed', camera_id=cam_id) }}" alt="Stream en vivo">
+            </div>
+        {% endfor %}
+    {% else %}
+        <h2>No hay cámaras disponibles</h2>
+    {% endif %}
+
+    <!-- Contenedor para los logs de gestos -->
+    <div id="logContainer">
+        <strong>Eventos:</strong>
+    </div>
+
+    <!-- Scripts para Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        // Conectar con el servidor de Socket.IO
+        const socket = io();
+
+        // Escuchar el evento "gesture_event"
+        socket.on("gesture_event", function(data) {
+            const logContainer = document.getElementById("logContainer");
+            const p = document.createElement("p");
+            p.textContent = data.message;
+            logContainer.appendChild(p);
+            // Opcional: scroll automático hacia abajo
+            logContainer.scrollTop = logContainer.scrollHeight;
+        });
+    </script>
+</body>
+</html>
