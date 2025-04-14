@@ -44,22 +44,7 @@
                 <h3>Cámara {{ cam_id }}</h3>
                 <img class="cam-stream" src="{{ url_for('video_feed', camera_id=cam_id) }}" alt="Stream en vivo">
             </div>
-            <div class="cam-container">
-                <h3>Cámara {{ cam_id }}</h3>
-                <img class="cam-stream" src="{{ url_for('video_feed', camera_id=cam_id) }}" alt="Stream en vivo">
-            </div>
-            <div class="cam-container">
-                <h3>Cámara {{ cam_id }}</h3>
-                <img class="cam-stream" src="{{ url_for('video_feed', camera_id=cam_id) }}" alt="Stream en vivo">
-            </div>
-            <div class="cam-container">
-                <h3>Cámara {{ cam_id }}</h3>
-                <img class="cam-stream" src="{{ url_for('video_feed', camera_id=cam_id) }}" alt="Stream en vivo">
-            </div>
-            <div class="cam-container">
-                <h3>Cámara {{ cam_id }}</h3>
-                <img class="cam-stream" src="{{ url_for('video_feed', camera_id=cam_id) }}" alt="Stream en vivo">
-            </div>
+           
         {% endfor %}
     {% else %}
         <h2>No hay cámaras disponibles</h2>
