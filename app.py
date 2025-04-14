@@ -580,6 +580,6 @@ def video_feed(camera_id):
 if __name__ == '__main__':
     #indices = listar_camaras_disponibles()
     #print("Cámaras detectadas:", indices)
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
 
     
