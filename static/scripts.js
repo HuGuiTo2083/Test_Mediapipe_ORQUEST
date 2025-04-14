@@ -1,82 +1,76 @@
- // Seleccionamos el video y el canvas
- const videoElement = document.querySelector('.input_video');
- const canvasElement = document.querySelector('.output_canvas');
- const canvasCtx = canvasElement.getContext('2d');
+/* static/js/cams.js */
+document.addEventListener('DOMContentLoaded', () => {
+  (async () => {
+    /* 0. contenedor padre */
+    const camsContainer = document.getElementById('cams');
+    if (!camsContainer){
+      console.error('Falta el div id="cams" en el HTML');
+      return;
+    }
 
- // 1) Configurar la solución de Hands en JavaScript
- const hands = new Hands({
-   locateFile: (file) => {
-     // Indica dónde buscar los archivos del modelo
-     return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-   }
- });
- hands.setOptions({
-   maxNumHands: 2,            // Número máximo de manos a detectar
-   modelComplexity: 1,        // Complejidad del modelo (0,1)
-   minDetectionConfidence: 0.5,
-   minTrackingConfidence: 0.5
- });
+    try {
+      /* 1.  Pedimos permiso (una sola cámara cualquiera)            */
+      const tmp = await navigator.mediaDevices.getUserMedia({video:true});
+      tmp.getTracks().forEach(t => t.stop());  // liberamos enseguida
 
- // 2) Función que se llamará cuando tengamos resultados
- hands.onResults((results) => {
-   // Limpiamos el canvas
-   canvasCtx.save();
-   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
-   
-   // Dibujamos la imagen de la cámara en el canvas
-   canvasCtx.drawImage(
-     results.image, 0, 0, canvasElement.width, canvasElement.height
-   );
+      /* 2.  Enumeramos todos los dispositivos videoinput            */
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cams = devices.filter(d => d.kind === 'videoinput');
 
-   // Verificamos si se detectaron manos
-   if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-     for (const landmarks of results.multiHandLandmarks) {
-       // Dibuja las conexiones y puntos de la mano (opcional)
-       drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
-         color: '#00FF00', // color de las líneas
-         lineWidth: 2
-       });
-       drawLandmarks(canvasCtx, landmarks, {
-         color: '#FF0000', // color de los puntos
-         lineWidth: 1
-       });
+      console.log(`Cámaras detectadas: ${cams.length}`);
 
-       // 3) Calcular y dibujar un bounding box alrededor de la mano
-       const xArray = landmarks.map((lm) => lm.x);
-       const yArray = landmarks.map((lm) => lm.y);
+      /* 3.  Recorremos cada cámara                                  */
+      for (let i = 0; i < cams.length; i++){
+        const cam = cams[i];
+        try{
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: {deviceId: {exact: cam.deviceId}},
+            audio: false
+          });
 
-       // MediaPipe da coordenadas normalizadas [0..1], escalamos al tamaño del canvas
-       const xMin = Math.min(...xArray) * canvasElement.width;
-       const xMax = Math.max(...xArray) * canvasElement.width;
-       const yMin = Math.min(...yArray) * canvasElement.height;
-       const yMax = Math.max(...yArray) * canvasElement.height;
+          /* 4.  Creamos tarjeta y reproducimos                       */
+          const card  = document.createElement('div');
+          card.className = 'cam';
+          card.innerHTML = `
+            <h3>Cámara ${i}</h3>
+            <video autoplay muted playsinline></video>
+          `;
+          const video = card.querySelector('video');
+          video.srcObject = stream;
 
-       canvasCtx.strokeStyle = 'blue';
-       canvasCtx.lineWidth = 2;
-       canvasCtx.strokeRect(xMin, yMin, xMax - xMin, yMax - yMin);
-     }
-   }
-   canvasCtx.restore();
- });
+          camsContainer.appendChild(card);
+          console.log(`Cámara [${i}] añadida: ${cam.label || '(sin nombre)'}`);
+          //---------------------
+         /* 5.  Canvas y envío periódico a /upload                   */
+      const canvas = document.createElement('canvas');
+      const ctx    = canvas.getContext('2d');
+      const track  = stream.getVideoTracks()[0];
+      const {width, height} = track.getSettings();
+      canvas.width  = width  || 640;
+      canvas.height = height || 480;
 
- // 4) Acceder a la cámara del usuario
- async function startCamera() {
-   // Pedir permisos de cámara
-   const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-   videoElement.srcObject = stream;
-   videoElement.play();
+      setInterval(() => {
+        if (video.readyState < 2) return;      // aún no hay frame
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+          fetch('/upload', {
+            method: 'POST',
+            body:   blob,
+            // opcional: identifica la cámara en un header
+            headers: { 'X-Cam-Id': String(i) }
+          });
+        }, 'image/jpeg', 0.7);
+      }, 100);   // 100 ms  (10 fps) – ajusta a tu gusto
 
-   // Ajustar el tamaño del canvas si deseas
-   canvasElement.width = 640;
-   canvasElement.height = 480;
- }
+          // --------------------
 
- // Iniciamos la cámara
- startCamera();
+        }catch(err){
+          console.warn(`No se pudo abrir la cámara [${i}] – ${cam.label}:`, err);
+        }
+      }
 
- // 5) Bucle de animación: enviar cada frame a MediaPipe
- function onFrame() {
-   hands.send({ image: videoElement });
-   requestAnimationFrame(onFrame);
- }
- onFrame();
+    } catch(err){
+      console.error('Permiso denegado o error al acceder a dispositivos:', err);
+    }
+  })();
+});
