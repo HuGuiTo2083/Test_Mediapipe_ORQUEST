@@ -6,7 +6,7 @@ from mss import mss
 import cv2
 import numpy as np
 from flask_socketio import SocketIO, emit
-from datetime import datetime  
+from datetime import datetime
 from skimage.metrics import structural_similarity as ssim
 
 import os
@@ -50,7 +50,7 @@ import math
 def log_event(message):
     print(message)
     socketio.emit("gesture_event",              # ←  se envía al front‑end
-                  {"message": message})  
+                  {"message": message})
     # Emite el evento "gesture_event" a todos los clientes conectados
     #socketio.emit("gesture_event", {"message": message})
 
@@ -69,11 +69,11 @@ def gen_frames(camera_index):
 
     # Crea el objeto de captura para la cámara (0 = cámara principal)
     cap = cv2.VideoCapture(camera_index)
-    
+
     # Ajustes opcionales de la cámara (descomentarlos si quieres forzar un tamaño)
     # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-    
+
     # =========================================
     # 2) Instancia del detector de manos
     # =========================================
@@ -106,7 +106,7 @@ def gen_frames(camera_index):
              min_detection_confidence=0.5,
              min_tracking_confidence=0.5
     ) as face_mesh:
-        
+
         while True:
             # Capturamos frame a frame de la cámara
             success, frame = cap.read()
@@ -115,10 +115,10 @@ def gen_frames(camera_index):
 
             # Volteamos horizontalmente para un efecto espejo (opcional)
             frame = cv2.flip(frame, 1)
-            
+
             # Convertir de BGR -> RGB, porque MediaPipe trabaja mejor en RGB
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            
+
             # =========================================
             # 3) Procesar la imagen con MediaPipe
             # =========================================
@@ -130,7 +130,7 @@ def gen_frames(camera_index):
 
             # Volvemos a convertir a BGR para dibujar con OpenCV
             frame = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR)
-            
+
             # Dimensiones de la imagen
             h, w, _ = frame.shape
 
@@ -143,14 +143,14 @@ def gen_frames(camera_index):
                 # results.multi_hand_landmarks es una lista. Cada elemento
                 # corresponde a una mano detectada y trae 21 landmarks (puntos).
                 for hand_landmarks in results.multi_hand_landmarks:
-                    
+
                     # (Opcional) Dibuja puntos y conexiones
                     mp_drawing.draw_landmarks(
                         frame,
                         hand_landmarks,
                         mp_hands.HAND_CONNECTIONS
                     )
-                    
+
                     # =================================
                     # A) Dibujar bounding box (recuadro)
                     # =================================
@@ -159,10 +159,10 @@ def gen_frames(camera_index):
                     # Extraemos las coordenadas x,y de cada landmark:
                     x_coords = [int(lm.x * w) for lm in hand_landmarks.landmark]
                     y_coords = [int(lm.y * h) for lm in hand_landmarks.landmark]
-                    
+
                     x_min, x_max = min(x_coords), max(x_coords)
                     y_min, y_max = min(y_coords), max(y_coords)
-                    
+
                     # Dibujamos el rectángulo
                     cv2.rectangle(
                         frame,
@@ -177,7 +177,7 @@ def gen_frames(camera_index):
                     # =================================
                     # Aquí podríamos hacer cualquier análisis: por ejemplo
                     # si se levanta cierto dedo, si la mano está cerrada, etc.
-                    
+
                     # MediaPipe indexa los 21 puntos (landmarks) de la mano de la siguiente forma:
                     #if :
                     #
@@ -278,7 +278,7 @@ def gen_frames(camera_index):
                     # Recuerda que .y está normalizado (0 = parte superior, 1 = parte inferior de la imagen)
                     # Por ende, un índice menor de y significa "más arriba" en la imagen.
                     # Si la punta del índice está por encima de la muñeca, interpretamos "dedo levantado".
-                    
+
                     #if index_tip_y < wrist_y:
                         #print("Dedo índice levantado")
 
@@ -305,7 +305,7 @@ def gen_frames(camera_index):
                     dist_thumb_and_index = math.sqrt((thumb_tip.x - index_tip.x)**2 + (thumb_tip.y - index_tip.y)**2)
 
                     # print("distancia entre thumb e index: " + str(dist_thumb_and_index))
-                    
+
                     # if dist_thumb_and_index < 0.1:
                     #     print("se juntó el pulgar con el indice---")
 
@@ -314,10 +314,10 @@ def gen_frames(camera_index):
                     dist_pinky_pip_and_ring_tip = math.sqrt((ring_finger_tip.x - pinky_pip.x)**2 + (ring_finger_tip.y - pinky_pip.y)**2)
 
                     # print("distancia entre pynky_pip y ring_ringer_tip: " + str(dist_pinky_pip_and_ring_tip))
-                    
+
                     # if dist_pinky_pip_and_ring_tip < 0.1:
                     #     print("---se juntó el anular con el meñique " )
-                        
+
                     ring_finger_pip = hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_PIP]
                     middle_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP]
 
@@ -477,8 +477,8 @@ def gen_frames(camera_index):
 
                         # Calcular la distancia Euclidiana en 3D:
                         dist_chin_hand = math.sqrt(
-                            (chin_x - wrist_x)**2 + 
-                            (chin_y - wrist_y)**2 + 
+                            (chin_x - wrist_x)**2 +
+                            (chin_y - wrist_y)**2 +
                             (chin_z - wrist_z)**2
                         )
 
@@ -496,7 +496,7 @@ def gen_frames(camera_index):
             # Codifica el fotograma como JPEG y envía la secuencia de bytes
             ret, buffer = cv2.imencode('.jpg', frame)
             frame_bytes = buffer.tobytes()
-            
+
             # yield: Genera un bloque de datos con el formato multipart/x-mixed-replace
             # para que el navegador actualice el <img> en tiempo real
             yield (b'--frame\r\n'
@@ -508,7 +508,7 @@ def gen_frames(camera_index):
 OPENROUTER_API_KEY = "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"  # Reemplazar con tu clave
 DEEPSEEK_MODEL = "deepseek/deepseek-r1:free"
 PROMPT_IA = """Analiza esta diapositiva siguiendo estas reglas:
-1. IGNORA COMPLETAMENTE: 
+1. IGNORA COMPLETAMENTE:
    - Barras de herramientas/menús (Archivo, Editar, Ver)
    - Números de página/palabras
    - Botones de interfaz (X, Minimizar, etc.)
@@ -532,9 +532,9 @@ PROMPT_IA = """Analiza esta diapositiva siguiendo estas reglas:
 # Actualiza el diccionario de aplicaciones
 PRESENTATION_APPS = {
     'powerpoint': [
-        'powerpoint', 
-        'ppt', 
-        'ppsx', 
+        'powerpoint',
+        'ppt',
+        'ppsx',
         'presentación',
         'presentation',
         'slide show'
@@ -578,8 +578,8 @@ def listar_camaras_disponibles(max_test=10):
 
 @app.route('/')
 def index():
-    indices_camaras = listar_camaras_disponibles()
-    return render_template('index.html', cameras=indices_camaras)
+    # indices_camaras = listar_camaras_disponibles()
+    return render_template('index.html')
 
 
 
@@ -603,13 +603,13 @@ def upload():
     # 2. procesar (copia/pega tu lógica; aquí muy resumida)
     frame = cv2.flip(frame, 1)
     frame_rgb   = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-  
+
     frame = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR)
-    
-    
+
+
     # Volteamos horizontalmente para un efecto espejo (opcional)
-    
-    
+
+
     # =========================================
     # 3) Procesar la imagen con MediaPipe
     # =========================================
@@ -641,7 +641,7 @@ def upload():
 
     # Volvemos a convertir a BGR para dibujar con OpenCV
     frame = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR)
-    
+
     # Dimensiones de la imagen
     h, w, _ = frame.shape
     # ================================================
@@ -652,14 +652,14 @@ def upload():
         # results.multi_hand_landmarks es una lista. Cada elemento
         # corresponde a una mano detectada y trae 21 landmarks (puntos).
         for hand_landmarks in results.multi_hand_landmarks:
-            
+
             # (Opcional) Dibuja puntos y conexiones
             mp_drawing.draw_landmarks(
                 frame,
                 hand_landmarks,
                 mp_hands.HAND_CONNECTIONS
             )
-            
+
             # =================================
             # A) Dibujar bounding box (recuadro)
             # =================================
@@ -667,10 +667,10 @@ def upload():
             # Extraemos las coordenadas x,y de cada landmark:
             x_coords = [int(lm.x * w) for lm in hand_landmarks.landmark]
             y_coords = [int(lm.y * h) for lm in hand_landmarks.landmark]
-            
+
             x_min, x_max = min(x_coords), max(x_coords)
             y_min, y_max = min(y_coords), max(y_coords)
-            
+
             # Dibujamos el rectángulo
             cv2.rectangle(
                 frame,
@@ -684,7 +684,7 @@ def upload():
             # =================================
             # Aquí podríamos hacer cualquier análisis: por ejemplo
             # si se levanta cierto dedo, si la mano está cerrada, etc.
-            
+
             # MediaPipe indexa los 21 puntos (landmarks) de la mano de la siguiente forma:
             #if :
             #
@@ -780,7 +780,7 @@ def upload():
             # Recuerda que .y está normalizado (0 = parte superior, 1 = parte inferior de la imagen)
             # Por ende, un índice menor de y significa "más arriba" en la imagen.
             # Si la punta del índice está por encima de la muñeca, interpretamos "dedo levantado".
-            
+
             #if index_tip_y < wrist_y:
                 #print("Dedo índice levantado")
             pinky_tip = hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_TIP]
@@ -800,16 +800,16 @@ def upload():
             index_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
             dist_thumb_and_index = math.sqrt((thumb_tip.x - index_tip.x)**2 + (thumb_tip.y - index_tip.y)**2)
             # print("distancia entre thumb e index: " + str(dist_thumb_and_index))
-            
+
             # if dist_thumb_and_index < 0.1:
             #     print("se juntó el pulgar con el indice---")
             pinky_pip = hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_PIP]
             dist_pinky_pip_and_ring_tip = math.sqrt((ring_finger_tip.x - pinky_pip.x)**2 + (ring_finger_tip.y - pinky_pip.y)**2)
             # print("distancia entre pynky_pip y ring_ringer_tip: " + str(dist_pinky_pip_and_ring_tip))
-            
+
             # if dist_pinky_pip_and_ring_tip < 0.1:
             #     print("---se juntó el anular con el meñique " )
-                
+
             ring_finger_pip = hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_PIP]
             middle_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP]
             dist_ring_finger_pip_and_middle_tip = math.sqrt((ring_finger_pip.x - middle_finger_tip.x)**2 + (ring_finger_pip.y - middle_finger_tip.y)**2)
@@ -940,8 +940,8 @@ def upload():
                 wrist_x, wrist_y, wrist_z = wrist.x, wrist.y, wrist.z
                 # Calcular la distancia Euclidiana en 3D:
                 dist_chin_hand = math.sqrt(
-                    (chin_x - wrist_x)**2 + 
-                    (chin_y - wrist_y)**2 + 
+                    (chin_x - wrist_x)**2 +
+                    (chin_y - wrist_y)**2 +
                     (chin_z - wrist_z)**2
                 )
                 # print("la distancia entre la muñeca y la barbilla es: " + str(dist_chin_hand))
@@ -954,7 +954,7 @@ def upload():
     # Codifica el fotograma como JPEG y envía la secuencia de bytes
     ret, buffer = cv2.imencode('.jpg', frame)
     frame_bytes = buffer.tobytes()
-    
+
     last_frame = frame          # para un /video_feed opcional
     return ('', 204)            # sin contenido
 
@@ -969,4 +969,4 @@ if __name__ == '__main__':
     #print("Cámaras detectadas:", indices)
     socketio.run(app, host="0.0.0.0", port=port, debug=False, allow_unsafe_werkzeug=True)
 
-    
+
