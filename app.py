@@ -8,6 +8,8 @@ from flask_socketio import SocketIO, emit
 from datetime import datetime  
 from skimage.metrics import structural_similarity as ssim
 
+import os
+port = int(os.environ.get("PORT", 5000))
 
 
 app = Flask(__name__)
@@ -580,6 +582,6 @@ def video_feed(camera_id):
 if __name__ == '__main__':
     #indices = listar_camaras_disponibles()
     #print("Cámaras detectadas:", indices)
-    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host="0.0.0.0", port=port, debug=True, allow_unsafe_werkzeug=True)
 
     
