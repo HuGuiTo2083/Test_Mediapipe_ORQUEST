@@ -615,7 +615,6 @@ def upload():
     # =========================================
     # Esto hace el análisis de la mano. Devuelve un objeto "results"
     # con información sobre las manos detectadas.
-    results = hands.process(frame_rgb)
 
     with mp_hands.Hands(
         static_image_mode=False,
