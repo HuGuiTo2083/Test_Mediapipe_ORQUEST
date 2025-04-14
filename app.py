@@ -17,29 +17,11 @@ mp_hands = mp.solutions.hands
 mp_pose = mp.solutions.pose
 mp_face_mesh = mp.solutions.face_mesh
 # ---- instancias persistentes ----
-hands = mp_hands.Hands(
-    static_image_mode=False,
-    max_num_hands=2,
-    model_complexity=1,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5
-)
 
-pose = mp_pose.Pose(
-    static_image_mode=False,
-    model_complexity=1,
-    smooth_landmarks=True,
-    enable_segmentation=False,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5
-)
 
-face = mp_face_mesh.FaceMesh(
-    max_num_faces=1,
-    refine_landmarks=True,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5
-)
+
+
+
 
 # mp.solutions.drawing_utils contiene funciones para dibujar los landmarks
 # (puntos) y las conexiones (líneas) en la imagen.
@@ -634,8 +616,30 @@ def upload():
     # Esto hace el análisis de la mano. Devuelve un objeto "results"
     # con información sobre las manos detectadas.
     results = hands.process(frame_rgb)
-    results_pose = pose.process(frame_rgb)
-    results_face = face.process(frame_rgb)
+
+    with mp_hands.Hands(
+        static_image_mode=False,
+        max_num_hands=2,
+        model_complexity=1,
+        min_detection_confidence=0.5,
+        min_tracking_confidence=0.5
+    ) as hands_temp, mp_pose.Pose(
+        static_image_mode=False,
+        model_complexity=1,
+        smooth_landmarks=True,
+        enable_segmentation=False,
+        min_detection_confidence=0.5,
+        min_tracking_confidence=0.5
+    ) as pose_temp, mp_face_mesh.FaceMesh(
+        max_num_faces=1,
+        refine_landmarks=True,
+        min_detection_confidence=0.5,
+        min_tracking_confidence=0.5
+    ) as face_temp:
+        results = hands_temp.process(frame_rgb)
+        results_pose = pose_temp.process(frame_rgb)
+        results_face = face_temp.process(frame_rgb)
+
     # Volvemos a convertir a BGR para dibujar con OpenCV
     frame = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR)
     
@@ -955,12 +959,15 @@ def upload():
     last_frame = frame          # para un /video_feed opcional
     return ('', 204)            # sin contenido
 
+
+
+
 print("Puerto en uso:", port)
 
 
 if __name__ == '__main__':
     #indices = listar_camaras_disponibles()
     #print("Cámaras detectadas:", indices)
-    socketio.run(app, host="0.0.0.0", port=port, debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host="0.0.0.0", port=port, debug=False, allow_unsafe_werkzeug=True)
 
     
