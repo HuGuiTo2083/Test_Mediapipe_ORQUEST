@@ -967,6 +967,6 @@ print("Puerto en uso:", port)
 if __name__ == '__main__':
     #indices = listar_camaras_disponibles()
     #print("Cámaras detectadas:", indices)
-    socketio.run(app, host="0.0.0.0", port=port, debug=False, allow_unsafe_werkzeug=True)
+    socketio.run(app, host="0.0.0.0", port=port, debug=False)
 
 
