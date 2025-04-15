@@ -5,6 +5,7 @@ import mediapipe as mp
 from mss import mss
 import cv2
 import numpy as np
+# from flask_socketio import SocketIO, emit
 from datetime import datetime
 from skimage.metrics import structural_similarity as ssim
 
@@ -28,7 +29,7 @@ mp_drawing = mp.solutions.drawing_utils
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'tu_clave_secreta'  # Cambia esto en producción!
-socketio = SocketIO(app, cors_allowed_origins="*")
+# socketio = SocketIO(app, cors_allowed_origins="*")
 
 
 # Configuración de captura de pantalla
