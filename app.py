@@ -12,6 +12,7 @@ from skimage.metrics import structural_similarity as ssim
 import os
 port = int(os.environ.get("PORT", 5000))
 
+
 mp_hands = mp.solutions.hands
 mp_pose = mp.solutions.pose
 mp_face_mesh = mp.solutions.face_mesh
@@ -954,7 +955,7 @@ def upload():
     last_frame = frame          # para un /video_feed opcional
     return ('', 204)            # sin contenido
 
-
+print("Puerto en uso:", port)
 
 
 if __name__ == '__main__':
