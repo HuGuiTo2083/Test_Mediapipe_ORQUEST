@@ -5,7 +5,6 @@ import mediapipe as mp
 from mss import mss
 import cv2
 import numpy as np
-from flask_socketio import SocketIO, emit
 from datetime import datetime
 from skimage.metrics import structural_similarity as ssim
 
